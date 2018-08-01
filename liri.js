@@ -13,6 +13,7 @@ const request = require('request');
 const dotenv = require("dotenv").config();
 const keys = require("./keys.js");
 const fs = require("fs");
+let log;
 // const util = require("util");
 
 let spotify = new Spotify(keys.spotify);
@@ -21,6 +22,16 @@ let twitter = new Twitter(keys.twitter);
 let keyword = process.argv[2];
 let divider = "\n-------------------------\n";
 let params;
+
+var liriLog = console.log;
+console.log = function(msg) {
+    fs.appendFileSync("log.txt", msg, function(err) {
+        if(err) {
+            return liriLog(err);
+        }
+    });
+    liriLog(msg); //for stdout logs
+};
 
 
 function myTweets() {
@@ -117,8 +128,6 @@ function movieThis(film) {
         if (!err) {
 
             movie = JSON.parse(body);
-            // console.log(body);
-
             console.log(`
             ${divider}
             Title: ${movie.Title}
@@ -137,6 +146,14 @@ function movieThis(film) {
         }
     });
 }
+
+
+log = fs.appendFileSync("log.txt", divider + "Command: " + process.argv.slice(2).join(" "), err => {
+    if (err) {
+        console.log(`Unable to write into log file.  Error: ${err}`);
+    }
+});
+
 
 switch (keyword) {
     case "my-tweets":
@@ -187,4 +204,3 @@ switch (keyword) {
         break;
 
 }
-
